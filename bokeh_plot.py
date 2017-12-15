@@ -30,6 +30,7 @@ def rgb_to_hex(cmap):
 
 
 def get_pct(df, county_names, party_code):
+    '''Return percentage of votes by a given party.'''
     pct = []
 
     for county in county_names:
@@ -41,9 +42,6 @@ def get_pct(df, county_names, party_code):
             pct.append(0)
 
     return pct
-
-# return [df.loc[(df['County Name'] == county) &
-    #               (df['Party Code'] == party_code)]['Percentage of Vote'].values[0] for county in county_names]
 
 
 def create_plot():

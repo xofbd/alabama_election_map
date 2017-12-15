@@ -18,6 +18,7 @@ from bokeh.models import (
 
 
 def rgb_to_hex(cmap):
+    '''Return list of color hex codes given matplotlib colormap.'''
     hex = []
     N = 255
 
@@ -28,6 +29,23 @@ def rgb_to_hex(cmap):
     return hex
 
 
+def get_pct(df, county_names, party_code):
+    pct = []
+
+    for county in county_names:
+        try:
+            a = df['County Name'] == county
+            b = df['Party Code'] == party_code
+            pct.append(df.loc[a & b]['Percentage of Vote'].values[0])
+        except:
+            pct.append(0)
+
+    return pct
+
+# return [df.loc[(df['County Name'] == county) &
+    #               (df['Party Code'] == party_code)]['Percentage of Vote'].values[0] for county in county_names]
+
+
 def create_plot():
 
     # get county lats, lons, and county names
@@ -36,20 +54,21 @@ def create_plot():
 
     county_xs = [county['lons'] for county in counties.values()]
     county_ys = [county['lats'] for county in counties.values()]
-
     county_names = [county['name'] for county in counties.values()]
 
     # get processed election data
     df = pd.read_csv('data/county_level_percentages.csv', delimiter=',')
-    county_rates = [df.loc[(df['County Name'] == county) & (
-        df['Party Code'] == 'DEM')]['Percentage of Vote'].values[0]
-        for county in county_names]
+    dem_pct = get_pct(df, county_names, 'DEM')
+    rep_pct = get_pct(df, county_names, 'REP')
+    wrt_pct = get_pct(df, county_names, 'NON')
 
     source = ColumnDataSource(data=dict(
         x=county_xs,
         y=county_ys,
         name=county_names,
-        rate=county_rates,
+        dem_pct=dem_pct,
+        rep_pct=rep_pct,
+        wrt_pct=wrt_pct
     ))
 
     # set colormap to use
@@ -68,9 +87,9 @@ def create_plot():
     )
     p.grid.grid_line_color = None
 
-    # add county shapes and color patch
+    # add county shapes and color to the patches
     p.patches('x', 'y', source=source,
-              fill_color={'field': 'rate', 'transform': color_mapper},
+              fill_color={'field': 'dem_pct', 'transform': color_mapper},
               fill_alpha=0.7, line_color="white", line_width=0.5)
 
     # display color bar
@@ -80,8 +99,10 @@ def create_plot():
     hover = p.select_one(HoverTool)
     hover.point_policy = "follow_mouse"
     hover.tooltips = [
-        ("Name", "@name"),
-        ("Doug Jones", "@rate%"),
+        ("County", "@name"),
+        ("Doug Jones", "@dem_pct%"),
+        ("Roy Moore", "@rep_pct%"),
+        ("Write In", "@wrt_pct%"),
         ("(Long, Lat)", "($x, $y)"),
     ]
 

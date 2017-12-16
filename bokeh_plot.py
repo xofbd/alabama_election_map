@@ -82,7 +82,7 @@ def create_plot(output='components'):
 
     p = figure(
         title="Alabama US Senate Special Election 2017", tools=TOOLS,
-        x_axis_location=None, y_axis_location=None
+        x_axis_location=None, y_axis_location=None, plot_width=450, plot_height=600
     )
     p.grid.grid_line_color = None
 

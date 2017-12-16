@@ -19,14 +19,14 @@ from bokeh.models import (
 
 def rgb_to_hex(cmap):
     '''Return list of color hex codes given a matplotlib colormap.'''
-    hex = []
+    hex_code = []
     N = 255
 
     for i in xrange(N):
         r, g, b, a = getattr(cm, cmap)(i)
-        hex.append('#%02x%02x%02x' % (N * r, N * g, N * b))
+        hex_code.append('#%02x%02x%02x' % (N * r, N * g, N * b))
 
-    return hex
+    return hex_code
 
 
 def get_pct(df, county_names, party_code):

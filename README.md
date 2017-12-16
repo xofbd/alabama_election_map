@@ -1,6 +1,11 @@
 # Alabama Election Map
 This repository is ready to deploy a Bokeh figure on Heroku. <br>
 
+## Prerequisites
+You will need to have these python packages installed. <br>
+`bokeh, Flask, pandas` <br>
+You can easily download and install them by running `pip install package-name`, where "package-name" is the name of the desired package. You will also need a Heroku account have installed the Heroku CLI. For more information on the Heroku CLI, go to https://devcenter.heroku.com/articles/heroku-cli#download-and-install
+
 ## Running using only Bokeh
 To run the code only using Bokeh, simply run `bokeh_plot.py`. This will open up the figure on your web browser. You may want to modify the code by changing parameters, adding feature, widgets, etc. If that is the case, it is easier to debug your code by running `bokeh_plot.py`. <br>
 

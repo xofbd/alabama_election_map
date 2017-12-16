@@ -18,7 +18,7 @@ from bokeh.models import (
 
 
 def rgb_to_hex(cmap):
-    '''Return list of color hex codes given matplotlib colormap.'''
+    '''Return list of color hex codes given a matplotlib colormap.'''
     hex = []
     N = 255
 
@@ -107,4 +107,5 @@ def create_plot():
 
     return components(p)
 
-create_plot()
+if __name__ == '__main__':
+    create_plot()

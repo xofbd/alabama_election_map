@@ -89,7 +89,7 @@ def create_plot(output='components'):
     # add county shapes and color to the patches
     p.patches('x', 'y', source=source,
               fill_color={'field': 'dem_pct', 'transform': color_mapper},
-              fill_alpha=1.0, line_color="white", line_width=0.5)
+              fill_alpha=1.0, line_color="white", line_width=1.0)
 
     # display color bar
     p.add_layout(color_bar, 'right')

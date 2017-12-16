@@ -54,7 +54,7 @@ def create_plot():
     county_ys = [county['lats'] for county in counties.values()]
     county_names = [county['name'] for county in counties.values()]
 
-    # get processed election data
+    # get processed election data and store as ColumnDataSource
     df = pd.read_csv('data/county_level_percentages.csv', delimiter=',')
     dem_pct = get_pct(df, county_names, 'DEM')
     rep_pct = get_pct(df, county_names, 'REP')
@@ -69,12 +69,13 @@ def create_plot():
         wrt_pct=wrt_pct
     ))
 
-    # set colormap to use
+    # set colormap
     palette = rgb_to_hex('seismic')
     palette.reverse()
 
     color_mapper = LinearColorMapper(palette=palette, low=0, high=100)
-    color_bar = ColorBar(color_mapper=color_mapper, border_line_color=None)
+    color_bar = ColorBar(color_mapper=color_mapper,
+                         border_line_color=None, location=(15, 0), label_standoff=0)
 
     # initialize figure object
     TOOLS = "pan, wheel_zoom, reset, hover, save"
@@ -88,7 +89,7 @@ def create_plot():
     # add county shapes and color to the patches
     p.patches('x', 'y', source=source,
               fill_color={'field': 'dem_pct', 'transform': color_mapper},
-              fill_alpha=0.7, line_color="white", line_width=0.5)
+              fill_alpha=1.0, line_color="white", line_width=0.5)
 
     # display color bar
     p.add_layout(color_bar, 'right')

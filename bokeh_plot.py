@@ -44,7 +44,7 @@ def get_pct(df, county_names, party_code):
     return pct
 
 
-def create_plot():
+def create_plot(output='components'):
 
     # get county lats, lons, and county names
     with open('data/counties.p', 'r') as fp:
@@ -105,7 +105,10 @@ def create_plot():
         ("(Long, Lat)", "($x, $y)"),
     ]
 
-    return components(p)
+    if output == 'show':
+        return show(p)
+    else:
+        return components(p)
 
 if __name__ == '__main__':
-    create_plot()
+    create_plot(output='show')

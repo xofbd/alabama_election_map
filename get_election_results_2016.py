@@ -23,7 +23,8 @@ def get_data(url):
     data_dict = {}
     col_names = (
         'county', 'djt_votes', 'djt_pct', 'hrc_votes', 'hrc_pct', 'gej_votes',
-        'gej_pct', 'jes_votes', 'jes_pct', 'wrt_votes', 'wrt_pct', 'total_votes', 'total_turnout'
+        'gej_pct', 'jes_votes', 'jes_pct', 'wrt_votes', 'wrt_pct',
+        'total_votes', 'total_turnout'
     )
 
     n_cols = len(col_names)

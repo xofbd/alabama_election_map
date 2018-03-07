@@ -81,13 +81,14 @@ def create_map(source, title, hover_list):
 
     color_mapper = LinearColorMapper(palette=palette, low=0, high=100)
     color_bar = ColorBar(color_mapper=color_mapper,
-                         border_line_color=None, location=(15, 0),
-                         label_standoff=0)
+                         border_line_color=None, location=(0, 0),
+                         label_standoff=5)
 
     # initialize figure object
-    TOOLS = "pan, wheel_zoom, reset, hover, save"
-    plot = figure(title=title, tools=TOOLS, x_axis_location=None,
-                  y_axis_location=None, plot_width=450, plot_height=600)
+    TOOLS = 'pan, wheel_zoom, reset, hover, save'
+    plot = figure(title=title, tools=TOOLS, toolbar_location='left',
+                  x_axis_location=None, y_axis_location=None, plot_width=450,
+                  plot_height=600)
     plot.grid.grid_line_color = None
 
     # add county shapes and color to the patches

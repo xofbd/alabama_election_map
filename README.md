@@ -1,5 +1,5 @@
 # Alabama Election Map
-This repository is ready to deploy a Bokeh figure on Heroku. The code visualizes the Alabama Senate Special Election 2017 results on a county level. <br>
+This repository is ready to deploy a Bokeh figure on Heroku. The code visualizes the Alabama Senate Special Election 2017 results on a county level. The results of the US Presidential Election 2016 are also visualized as a comparison.<br>
 
 ## Prerequisites
 You will need to have these python packages installed. <br>

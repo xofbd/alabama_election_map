@@ -57,7 +57,23 @@ def get_shape_data():
 
 
 def create_map(source, title, hover_list):
-    '''Return bokeh Figure object for given election map data.'''
+    '''Return bokeh Figure object for given election map data.
+
+    Parameters
+    ----------
+    source : ColumnDataSource
+        contains the necessary data to create the county patches.
+
+    title: str
+        string of the title for the map.
+
+    hover_list: list
+        list of what data to display when hovering over county.
+
+    Returns
+    -------
+    bokeh Figure object of the map
+    '''
 
     # set colormap
     palette = rgb_to_hex('seismic')

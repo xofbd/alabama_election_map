@@ -1,7 +1,7 @@
-Flask==0.12.1
-gunicorn==19.3.0
-Jinja2==2.7.2
-pandas==0.20.2
+Flask==1.0
+gunicorn==19.5.0
+Jinja2==2.10
+pandas==0.23.3
 numpy==1.9.2
-bokeh==0.12.6
-matplotlib==1.5.1
+bokeh==0.13.0
+matplotlib==2.2.2

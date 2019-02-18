@@ -45,8 +45,8 @@ def get_pct(df, county_names, party_code):
 def get_shape_data():
     '''Return county names and coordinates for county patches.'''
 
-    with open('data/counties.p', 'r') as fp:
-        counties = pickle.load(fp)
+    with open('data/counties.pkl', 'rb') as f:
+        counties = pickle.load(f)
 
     county_xs = [county['lons'] for county in counties.values()]
     county_ys = [county['lats'] for county in counties.values()]

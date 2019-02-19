@@ -14,17 +14,16 @@ from bokeh.plotting import figure
 from matplotlib import cm
 
 
-def rgb_to_hex(cmap):
+def rgb_to_hex(cmap, N=255):
     '''Return list of color hex codes given a matplotlib colormap.'''
 
-    hex_code = []
-    N = 255
+    colormap = getattr(cm, cmap)
 
-    for i in xrange(N):
-        r, g, b, a = getattr(cm, cmap)(i)
-        hex_code.append('#%02x%02x%02x' % (N * r, N * g, N * b))
+    def hex_code(i):
+        rgba = map(lambda x: int(N * x), colormap(i))
+        return '#%02x%02x%02x' % tuple(rgba)[:-1]
 
-    return hex_code
+    return [hex_code(i) for i in range(N)]
 
 
 def get_pct(df, county_names, party_code):
@@ -37,7 +36,7 @@ def get_pct(df, county_names, party_code):
             a = df['County Name'] == county
             b = df['Party Code'] == party_code
             pct.append(df.loc[a & b]['Percentage of Vote'].values[0])
-        except:
+        except Exception:
             pct.append(0)
 
     return pct
@@ -46,8 +45,8 @@ def get_pct(df, county_names, party_code):
 def get_shape_data():
     '''Return county names and coordinates for county patches.'''
 
-    with open('data/counties.p', 'r') as fp:
-        counties = pickle.load(fp)
+    with open('data/counties.pkl', 'rb') as f:
+        counties = pickle.load(f)
 
     county_xs = [county['lons'] for county in counties.values()]
     county_ys = [county['lats'] for county in counties.values()]

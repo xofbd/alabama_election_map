@@ -6,7 +6,7 @@
 # results from wikipedia, using web scraping with BeautifulSoup
 
 from bs4 import BeautifulSoup
-from urllib2 import urlopen
+from urllib.request import urlopen
 
 
 def get_data(url):
@@ -33,10 +33,10 @@ def get_data(url):
     for i, col in enumerate(col_names):
         if col == 'county':
             data_dict[col] = [
-                td_tags[i].a.text for i in xrange(i, n_tags, n_cols)]
+                td_tags[i].a.text for i in range(i, n_tags, n_cols)]
         else:
             data_dict[col] = [
-                td_tags[i].text for i in xrange(i, n_tags, n_cols)]
+                td_tags[i].text for i in range(i, n_tags, n_cols)]
 
     return data_dict
 

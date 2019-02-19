@@ -9,8 +9,13 @@ def main():
     return redirect('/plot')
 
 
-@app.route('/plot')
+@app.route('/index')
 def index():
+    return redirect('/plot')
+
+
+@app.route('/plot')
+def plot():
     script, div = create_plot()
     return render_template('plot.html', script=script, div=div)
 

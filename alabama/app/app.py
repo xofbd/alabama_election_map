@@ -1,5 +1,6 @@
 from flask import Flask, redirect, render_template
-from bokeh_plot import create_plot
+
+from alabama.app.bokeh_plot import create_plot
 
 app = Flask(__name__)
 
@@ -9,15 +10,12 @@ def main():
     return redirect('/plot')
 
 
-@app.route('/index')
-def index():
-    return redirect('/plot')
-
-
 @app.route('/plot')
 def plot():
     script, div = create_plot()
+
     return render_template('plot.html', script=script, div=div)
 
+
 if __name__ == '__main__':
-    app.run(port=33507, debug=False)
+    app.run(debug=True)

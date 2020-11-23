@@ -17,11 +17,11 @@ def scrape_table_data(url):
     return soup.select('table.wikitable.sortable td')
 
 
-def process_data(td_tags):
-    """Return dictionary containing processed data from table data."""
-    col_names = ('county', 'djt_votes', 'djt_pct', 'hrc_votes', 'hrc_pct',
-                 'gej_votes', 'gej_pct', 'jes_votes', 'jes_pct', 'wrt_votes',
-                 'wrt_pct', 'total_votes', 'total_turnout')
+def create_data_frame(td_tags):
+    """Return data frame containing processed data from the table data."""
+    col_names = ('County Name', 'DJT Votes', 'DJT pct', 'HRC Votes', 'HRC pct',
+                 'GEJ Votes', 'GEJ pct', 'JES Votes', 'JES pct', 'WRT Votes',
+                 'WRT pct', 'Total Votes', 'Total Turnout')
 
     n_cols = len(col_names)
     n_tags = len(td_tags)
@@ -30,21 +30,21 @@ def process_data(td_tags):
     def process_row(tags):
         return dict(zip(col_names, [tag.text.strip() for tag in tags]))
 
-    return [process_row(td_tags[i*n_cols:(i+1)*n_cols]) for i in range(n_rows)]
+    data = [process_row(td_tags[i*n_cols:(i+1)*n_cols]) for i in range(n_rows)]
+    df = pd.DataFrame(data)
+    pct_cols = ['HRC pct', 'DJT pct', 'GEJ pct', 'JES pct']
+    df[pct_cols] = df[pct_cols].applymap(lambda pct: float(pct[:-1]))
 
-
-def dump_data(data, path):
-    """Dump data object to disk as CSV file."""
-    pd.DataFrame(data).to_csv(path, index=False)
+    return df
 
 
 def main(url, path):
     td_tags = scrape_table_data(url)
-    election_data = process_data(td_tags)
-    dump_data(election_data, path)
+    df = create_data_frame(td_tags)
+    df.to_csv(path, index=False)
 
 
 if __name__ == '__main__':
     url = 'https://en.wikipedia.org/w/index.php?title=2016_United_States_presidential_election_in_Alabama&oldid=814157769'
-    path = os.path.join('data', 'alabama_presidential_election_2016.csv')
+    path = os.path.join('data', 'presidential_election_results.csv')
     main(url, path)

@@ -95,7 +95,7 @@ def create_map(source, title, hover_list):
 def create_plot(output='components'):
 
     # Create appropriate variables for creating senate election map
-    path_senate = os.path.join('data', 'senate_election_county_results.csv')
+    path_senate = os.path.join('data', 'senate_election_results.csv')
     df_senate = pd.read_csv(path_senate)
     df_county = get_shape_data()
     df_senate = df_senate.merge(df_county,
@@ -112,16 +112,13 @@ def create_plot(output='components'):
     ]
 
     # Create appropriate variables for creating presidential election map
-    df = (pd.read_csv(os.path.join('data',
-                                   'alabama_presidential_election_2016.csv'))
-          .set_index('county'))
-    df[['hrc_pct', 'djt_pct', 'gej_pct', 'jes_pct']] = df[['hrc_pct', 'djt_pct', 'gej_pct', 'jes_pct']].applymap(
-        lambda pct: float(pct[:-1]))
-
-    df = df.rename({'djt_pct': 'rep_pct', 'hrc_pct': 'dem_pct',
-                    'gej_pct': 'ind_pct', 'jes_pct': 'grn_pct'})
-    df = df.merge(df_county, left_on='county', right_index=True)
-    s2 = ColumnDataSource(df)
+    path_pres = os.path.join('data', 'presidential_election_results.csv')
+    df_presidential = (pd.read_csv(path_pres)
+                       .set_index('county')
+                       .rename({'djt_pct': 'rep_pct', 'hrc_pct': 'dem_pct',
+                                'gej_pct': 'ind_pct', 'jes_pct': 'grn_pct'})
+                       .merge(df_county, left_on='county', right_index=True))
+    s2 = ColumnDataSource(df_presidential)
 
     h2_data = [
         ("County", "@name"),

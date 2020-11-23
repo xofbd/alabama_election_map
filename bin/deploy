@@ -1,0 +1,13 @@
+#!/bin/bash
+
+if [[ $1 == dev ]]; then
+    export FLASK_APP=alabama/app/app.py
+    export FLASK_DEBUG=True
+    export FLASK_ENV=development
+    flask run
+elif [[ $1 == prod ]]; then
+    gunicorn --pythonpath=alabama/app app:app
+else
+    echo "Positional argument should be dev or prod, not $1."
+    exit 1
+fi

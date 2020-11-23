@@ -1,3 +1,4 @@
+from bokeh import __version__
 from flask import Flask, redirect, render_template
 
 from alabama.app.bokeh_plot import create_plot
@@ -14,7 +15,10 @@ def main():
 def plot():
     script, div = create_plot()
 
-    return render_template('plot.html', script=script, div=div)
+    return render_template('plot.html',
+                           script=script,
+                           div=div,
+                           version=__version__)
 
 
 if __name__ == '__main__':

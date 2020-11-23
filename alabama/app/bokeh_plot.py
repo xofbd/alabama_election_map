@@ -95,15 +95,13 @@ def create_map(source, title, hover_list):
 def create_plot(output='components'):
 
     # Create appropriate variables for creating senate election map
-    df = pd.read_csv(os.path.join('data', 'county_level_percentages.csv'))
+    path_senate = os.path.join('data', 'senate_election_county_results.csv')
+    df_senate = pd.read_csv(path_senate)
     df_county = get_shape_data()
-    df_senate = df_county.copy()
+    df_senate = df_senate.merge(df_county,
+                                left_on='County Name',
+                                right_index=True)
 
-    for party in ('DEM', 'REP', 'NON'):
-        df_senate[party.lower() + '_pct'] = (df.set_index('County Name')
-                                             .query('`Party Code` == @party')
-                                             .loc[:, 'Percentage of Vote'])
-    df_senate = df_senate.fillna(0)
     s1 = ColumnDataSource(df_senate)
     h1_data = [
         ("County", "@name"),

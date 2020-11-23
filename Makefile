@@ -3,7 +3,7 @@ ACTIVATE_VENV := source venv/bin/activate
 
 .PHONY: all clean
 
-all: venv data/alabama_presidential_election.csv data/county_level_percentages.csv
+all: venv data/alabama_presidential_election.csv data/senate_election_results.csv
 
 venv: requirements.txt
 	test -d venv || python3 -m venv venv
@@ -13,8 +13,8 @@ venv: requirements.txt
 data/alabama_presidential_election.csv: venv
 	${ACTIVATE_VENV} && python -m alabama.process.presidential_election_results
 
-data/county_level_percentages.csv: venv
-	${ACTIVATE_VENV} && python -m alabama.process.process_election_data
+data/senate_election_results.csv: venv alabama/process/senate_election_data.py
+	${ACTIVATE_VENV} && python -m alabama.process.senate_election_data
 
 clean:
 	rm -rf venv

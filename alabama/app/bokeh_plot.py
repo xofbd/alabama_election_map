@@ -1,10 +1,7 @@
-# author: xofbd
-# date: December 15, 2017
-# file name: bokeh_plot.m
+import json
+import os
 
 import pandas as pd
-import pickle
-
 from bokeh.embed import components
 from bokeh.io import show
 from bokeh.models import (ColorBar, ColumnDataSource, HoverTool,
@@ -15,7 +12,7 @@ from matplotlib import cm
 
 
 def rgb_to_hex(cmap, N=255):
-    '''Return list of color hex codes given a matplotlib colormap.'''
+    """Return list of color hex codes given a matplotlib colormap."""
 
     colormap = getattr(cm, cmap)
 
@@ -26,37 +23,18 @@ def rgb_to_hex(cmap, N=255):
     return [hex_code(i) for i in range(N)]
 
 
-def get_pct(df, county_names, party_code):
-    '''Return percentage of votes by a given party.'''
-
-    pct = []
-
-    for county in county_names:
-        try:
-            a = df['County Name'] == county
-            b = df['Party Code'] == party_code
-            pct.append(df.loc[a & b]['Percentage of Vote'].values[0])
-        except Exception:
-            pct.append(0)
-
-    return pct
-
-
 def get_shape_data():
-    '''Return county names and coordinates for county patches.'''
+    """Return county names and coordinates for county patches."""
 
-    with open('data/counties.pkl', 'rb') as f:
-        counties = pickle.load(f)
+    with open(os.path.join('data', 'county_shapes.json'), 'r') as f:
+        counties = json.load(f)
 
-    county_xs = [county['lons'] for county in counties.values()]
-    county_ys = [county['lats'] for county in counties.values()]
-    county_names = [county['name'] for county in counties.values()]
-
-    return county_names, county_xs, county_ys
+    return pd.DataFrame(counties).set_index('name')
 
 
 def create_map(source, title, hover_list):
-    '''Return bokeh Figure object for given election map data.
+    """
+    Return bokeh Figure object for given election map data.
 
     Parameters
     ----------
@@ -72,33 +50,41 @@ def create_map(source, title, hover_list):
     Returns
     -------
     bokeh Figure object of the map
-    '''
+    """
 
-    # set colormap
+    # Set color map
     palette = rgb_to_hex('seismic')
     palette.reverse()
 
     color_mapper = LinearColorMapper(palette=palette, low=0, high=100)
     color_bar = ColorBar(color_mapper=color_mapper,
-                         border_line_color=None, location=(0, 0),
+                         border_line_color=None,
+                         location=(0, 0),
                          label_standoff=5)
 
-    # initialize figure object
+    # Initialize figure object
     TOOLS = 'pan, wheel_zoom, reset, hover, save'
-    plot = figure(title=title, tools=TOOLS, toolbar_location='left',
-                  x_axis_location=None, y_axis_location=None, plot_width=450,
+    plot = figure(title=title,
+                  tools=TOOLS,
+                  toolbar_location='left',
+                  x_axis_location=None,
+                  y_axis_location=None,
+                  plot_width=450,
                   plot_height=600)
     plot.grid.grid_line_color = None
 
-    # add county shapes and color to the patches
-    plot.patches('x', 'y', source=source,
+    # Add county shapes and color to the patches
+    plot.patches('x', 'y',
+                 source=source,
                  fill_color={'field': 'dem_pct', 'transform': color_mapper},
-                 fill_alpha=1.0, line_color="white", line_width=1.0)
+                 fill_alpha=1.0,
+                 line_color="white",
+                 line_width=1.0)
 
-    # display color bar
+    # Display color bar
     plot.add_layout(color_bar, 'right')
 
-    # add hover with fields to display
+    # Add hover with fields to display
     hover = plot.select_one(HoverTool)
     hover.point_policy = "follow_mouse"
     hover.tooltips = hover_list
@@ -108,23 +94,17 @@ def create_map(source, title, hover_list):
 
 def create_plot(output='components'):
 
-    county_names, county_xs, county_ys = get_shape_data()
+    # Create appropriate variables for creating senate election map
+    df = pd.read_csv(os.path.join('data', 'county_level_percentages.csv'))
+    df_county = get_shape_data()
+    df_senate = df_county.copy()
 
-    # create appropriate variables for creating 2017 map
-    df = pd.read_csv('data/county_level_percentages.csv', delimiter=',')
-    dem_pct_2017 = get_pct(df, county_names, 'DEM')
-    rep_pct_2017 = get_pct(df, county_names, 'REP')
-    wrt_pct_2017 = get_pct(df, county_names, 'NON')
-
-    s1 = ColumnDataSource(data=dict(
-        x=county_xs,
-        y=county_ys,
-        name=county_names,
-        dem_pct=dem_pct_2017,
-        rep_pct=rep_pct_2017,
-        wrt_pct=wrt_pct_2017
-    ))
-
+    for party in ('DEM', 'REP', 'NON'):
+        df_senate[party.lower() + '_pct'] = (df.set_index('County Name')
+                                             .query('`Party Code` == @party')
+                                             .loc[:, 'Percentage of Vote'])
+    df_senate = df_senate.fillna(0)
+    s1 = ColumnDataSource(df_senate)
     h1_data = [
         ("County", "@name"),
         ("Doug Jones", "@dem_pct%"),
@@ -133,27 +113,17 @@ def create_plot(output='components'):
         ("(Long, Lat)", "($x, $y)"),
     ]
 
-    # create appropriate variables for creating 2017 map
-    df_2016 = pd.read_csv('data/alabama_presidential_election_2016.csv')
-    df_2016.set_index('county', inplace=True)
+    # Create appropriate variables for creating presidential election map
+    df = (pd.read_csv(os.path.join('data',
+                                   'alabama_presidential_election_2016.csv'))
+          .set_index('county'))
+    df[['hrc_pct', 'djt_pct', 'gej_pct', 'jes_pct']] = df[['hrc_pct', 'djt_pct', 'gej_pct', 'jes_pct']].applymap(
+        lambda pct: float(pct[:-1]))
 
-    pct_2016 = dict()
-    party_to_cand = {'dem': 'hrc_pct', 'rep':
-                     'djt_pct', 'ind': 'gej_pct', 'grn': 'jes_pct'}
-
-    for party, cand in party_to_cand.items():
-        pct_2016[party] = [float(df_2016.loc[county, cand][:-1])
-                           for county in county_names]
-
-    s2 = ColumnDataSource(data=dict(
-        x=county_xs,
-        y=county_ys,
-        name=county_names,
-        dem_pct=pct_2016['dem'],
-        rep_pct=pct_2016['rep'],
-        ind_pct=pct_2016['ind'],
-        grn_pct=pct_2016['grn']
-    ))
+    df = df.rename({'djt_pct': 'rep_pct', 'hrc_pct': 'dem_pct',
+                    'gej_pct': 'ind_pct', 'jes_pct': 'grn_pct'})
+    df = df.merge(df_county, left_on='county', right_index=True)
+    s2 = ColumnDataSource(df)
 
     h2_data = [
         ("County", "@name"),
@@ -172,10 +142,13 @@ def create_plot(output='components'):
     tab2 = Panel(child=p2, title='2016')
     tabs = Tabs(tabs=[tab1, tab2])
 
+    # TODO: Better way to handle this? Env. variables?
+    # df.to_json('df.json')
     if output == 'show':
         return show(tabs)
     else:
         return components(tabs)
+
 
 if __name__ == '__main__':
     create_plot(output='show')

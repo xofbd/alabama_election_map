@@ -8,19 +8,6 @@ from bokeh.models import (ColorBar, ColumnDataSource, HoverTool,
                           LinearColorMapper)
 from bokeh.models.widgets import Panel, Tabs
 from bokeh.plotting import figure
-from matplotlib import cm
-
-
-def rgb_to_hex(cmap, N=255):
-    """Return list of color hex codes given a matplotlib colormap."""
-
-    colormap = getattr(cm, cmap)
-
-    def hex_code(i):
-        rgba = map(lambda x: int(N * x), colormap(i))
-        return '#%02x%02x%02x' % tuple(rgba)[:-1]
-
-    return [hex_code(i) for i in range(N)]
 
 
 def get_shape_data():
@@ -53,8 +40,8 @@ def create_map(source, title, hover_list):
     """
 
     # Set color map
-    palette = rgb_to_hex('seismic')
-    palette.reverse()
+    with open(os.path.join('data', 'seismic_colormap.json'), 'r') as f:
+        palette = json.load(f)
 
     color_mapper = LinearColorMapper(palette=palette, low=0, high=100)
     color_bar = ColorBar(color_mapper=color_mapper,
@@ -92,57 +79,66 @@ def create_map(source, title, hover_list):
     return plot
 
 
+def process_source(path, df_county, dem_candidate):
+    """Return ColumnDataSource object for a given election data path."""
+
+    # Since the visualization excepts a uniform name for the field to used for
+    # coloring in the map, the percentage the Democratic candidate receives
+    # needs to be renamed to dem_pct.
+    df_senate = (pd.read_csv(path)
+                 .merge(df_county, left_on='County Name', right_index=True)
+                 .rename({dem_candidate: 'dem_pct'}, axis=1))
+
+    return ColumnDataSource(df_senate)
+
+
 def create_plot(output='components'):
+    """
+    Visualize Alabama election results for presidential and senate races.
 
-    # Create appropriate variables for creating senate election map
+    The presidential election is for 2016 while the senate race was the special
+    election that occurred in December 2017.
+    """
+
+    # Process data for maps
+    path_pres = os.path.join('data', 'presidential_election_results.csv')
     path_senate = os.path.join('data', 'senate_election_results.csv')
-    df_senate = pd.read_csv(path_senate)
     df_county = get_shape_data()
-    df_senate = df_senate.merge(df_county,
-                                left_on='County Name',
-                                right_index=True)
+    s_1 = process_source(path_senate, df_county, 'Doug Jones')
+    s_2 = process_source(path_pres, df_county, 'HRC pct')
 
-    s1 = ColumnDataSource(df_senate)
     h1_data = [
-        ("County", "@name"),
+        ("County", "@{County Name}"),
         ("Doug Jones", "@dem_pct%"),
-        ("Roy Moore", "@rep_pct%"),
-        ("Write In", "@wrt_pct%"),
+        ("Roy Moore", "@{Roy S. Moore}%"),
+        ("Write In", "@{Write-In}%"),
         ("(Long, Lat)", "($x, $y)"),
     ]
-
-    # Create appropriate variables for creating presidential election map
-    path_pres = os.path.join('data', 'presidential_election_results.csv')
-    df_presidential = (pd.read_csv(path_pres)
-                       .set_index('county')
-                       .rename({'djt_pct': 'rep_pct', 'hrc_pct': 'dem_pct',
-                                'gej_pct': 'ind_pct', 'jes_pct': 'grn_pct'})
-                       .merge(df_county, left_on='county', right_index=True))
-    s2 = ColumnDataSource(df_presidential)
 
     h2_data = [
-        ("County", "@name"),
+        ("County", "@{County Name}"),
         ("Hillary Clinton", "@dem_pct%"),
-        ("Donald Trump", "@rep_pct%"),
-        ("Gary Johnson", "@ind_pct%"),
-        ("Jill Stein", "@grn_pct%"),
+        ("Donald Trump", "@{DJT pct}%"),
+        ("Gary Johnson", "@{GEJ pct}%"),
+        ("Jill Stein", "@{JES pct}%"),
         ("(Long, Lat)", "($x, $y)"),
     ]
 
-    p1 = create_map(s1, "Alabama US Senate Special Election 2017", h1_data)
-    p2 = create_map(s2, "Alabama US Presidential Election 2016", h2_data)
+    p_1 = create_map(s_1, "Alabama US Senate Special Election 2017", h1_data)
+    p_2 = create_map(s_2, "Alabama US Presidential Election 2016", h2_data)
 
-    # place Figure objects into tabs and return result
-    tab1 = Panel(child=p1, title='2017')
-    tab2 = Panel(child=p2, title='2016')
-    tabs = Tabs(tabs=[tab1, tab2])
+    # Place Figure objects into tabs
+    tab_1 = Panel(child=p_1, title='2017')
+    tab_2 = Panel(child=p_2, title='2016')
+    tabs = Tabs(tabs=[tab_1, tab_2])
 
-    # TODO: Better way to handle this? Env. variables?
-    # df.to_json('df.json')
     if output == 'show':
         return show(tabs)
-    else:
+    elif output == 'components':
         return components(tabs)
+    else:
+        msg = f"output must be equal to show of components, not {output}."
+        raise ValueError(msg)
 
 
 if __name__ == '__main__':

@@ -1,6 +1,0 @@
-beautifulsoup4==4.7.0
-pandas==1.0.0
-requests==2.25.0
-xlrd==1.2.0
-bokeh==1.0.4
-flask==1.0.0

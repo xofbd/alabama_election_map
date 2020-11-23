@@ -1,21 +1,48 @@
 SHELL := /bin/bash
 ACTIVATE_VENV := source venv/bin/activate
 
-.PHONY: all clean
+.PHONY: all clean deploy-dev deploy-prod
 
-all: venv data/presidential_election_results.csv data/senate_election_results.csv
+all: clean data/*_election_results.csv deploy-dev
 
-venv: requirements.txt
-	test -d venv || python3 -m venv venv
-	${ACTIVATE_VENV} && pip install -r requirements.txt
-	touch venv
+# Creating CSV files
+data/%_results.csv: .process alabama/process/%.py
+	${ACTIVATE_VENV} && python -m alabama.process.$*
 
-data/presidential_election_results.csv: venv
-	${ACTIVATE_VENV} && python -m alabama.process.presidential_election_results
+# Deployment
+deploy-dev: .deploy
+	${ACTIVATE_VENV} && bin/deploy dev
 
-data/senate_election_results.csv: venv alabama/process/senate_election_data.py
-	${ACTIVATE_VENV} && python -m alabama.process.senate_election_data
+deploy-prod: .deploy
+	${ACTIVATE_VENV} && bin/deploy prod
 
+# Virtual Environment
+venv:
+	python3 -m venv venv
+
+.pip-tools: venv requirements/pip-tools.txt
+	${ACTIVATE_VENV} && pip install -r requirements/pip-tools.txt
+	touch .pip-tools
+
+.process: .pip-tools requirements/base.txt requirements/requirements-process.txt
+	${ACTIVATE_VENV} && pip-sync $(word 2, $^) $(word 3, $^)
+	rm -f .deploy
+	touch .process
+
+.deploy: .pip-tools requirements/base.txt requirements/requirements-deploy.txt
+	${ACTIVATE_VENV} && pip-sync $(word 2, $^) $(word 3, $^)
+	rm -f .process
+	touch .deploy
+
+# Creating requirement files
+requirements/base.txt: .pip-tools
+	${ACTIVATE_VENV} && pip-compile requirements/base.in
+
+requirements/requirements-%.txt: requirements/base.txt requirements/requirements-%.in
+	${ACTIVATE_VENV} && pip-compile requirements/requirements-$*.in
+
+# Utility
 clean:
+	rm -f .pip-tools .process .deploy
 	rm -rf venv
-	find . -name  __pycache__ -exec rm -rf {} \;
+	find . | grep __pycache__ | xargs rm -rf

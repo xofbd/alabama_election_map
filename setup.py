@@ -1,10 +1,9 @@
-from distutils.core import setup
+from setuptools import setup
 
 from alabama import __version__
 
-with open('requirements/requirements-deploy.txt', 'r') as f:
-    requirements = [line.strip().split()[0] for line in f
-                    if not (line.startswith('#') or line.startswith('\n'))]
+with open('requirements.txt', 'r') as f:
+    requirements = [line.strip().split()[0] for line in f]
 
 with open('README.md', 'r') as f:
     long_description = f.read()

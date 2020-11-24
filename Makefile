@@ -41,6 +41,9 @@ requirements/base.txt: .pip-tools
 requirements/requirements-%.txt: requirements/base.txt requirements/requirements-%.in
 	${ACTIVATE_VENV} && pip-compile requirements/requirements-$*.in
 
+requirements.txt: .deploy
+	${ACTIVATE_VENV} && pip freeze > requirements.txt
+
 # Utility
 clean:
 	rm -f .pip-tools .process .deploy

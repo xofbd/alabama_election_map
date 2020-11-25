@@ -1,34 +1,37 @@
 # Alabama Election Map
-This repository is ready to deploy a Bokeh figure on Heroku. The code visualizes the Alabama Senate Special Election 2017 results on a county level. The results of the US Presidential Election 2016 are also visualized as a comparison.<br>
+This repository contains the files necessary to deploy a [Bokeh](https://docs.bokeh.org/en/latest/index.html) figure on [Heroku](https://www.heroku.com) using [Flask](https://flask.palletsprojects.com/en/1.1.x/). The code visualizes the Alabama Senate Special Election 2017 results on a county level. The results of the US Presidential Election 2016 are also visualized as a comparison.
 
-## Prerequisites
-You will need to have these python packages installed. <br>
-`bokeh, Flask, pandas` <br>
-You can easily download and install them by running `pip install package-name`, where "package-name" is the name of the desired package. You will also need a Heroku account and have installed the Heroku CLI. For more information on the Heroku CLI, go to https://devcenter.heroku.com/articles/heroku-cli#download-and-install.
+## Description
+There are two modules, `process` and `app`.
+* `process`: generates the requisite CSV files needed to visualize the election results.
+* `app`: serves the Bokeh visualization using Flask.
 
-## County Data
-The file `data/counties.p` was created by pickling the county data dictionary obtained from `bokeh.sampledata.us_counties`. This dictionary contains information like the county names and latitude and longitude pairs that define the shape of the county. When importing the county data from `bokeh.sampledata.us_counties`, errors will occur on Heroku, probably from not having write access. As a workaround, `counties.p` is used. <br>
+While we could use one set of dependencies for the entire application, we use [`pip-tools`](https://github.com/jazzband/pip-tools/) so that the deployment environment only contains the necessary packages to run.
 
-## Running using only Bokeh
-To run the code only using Bokeh, simply run `bokeh_plot.py`. This will open up the figure on your web browser. You may want to modify the code by changing parameters, adding features, widgets, etc. If that is the case, it is easier to debug your code by running `bokeh_plot.py`. <br>
+## Running the application
+The first step to run the application is to clone the repository:
+`git clone https://github.com/xofbd/alabama_election_map`.
 
-## Running the app locally using Flask
-You may want to run the app using Flask locally before deploying it to Heroku, especially if you have made any changes to the code. To run locally: <br>
+If you have `make` installed you can run the application several ways.
 
-0.) clone repository: `git clone https://github.com/xofbd/alabama_election_map` <br>
-1.) in the alabama_election_map directory, run `export FLASK_APP=app.py` in the command line. If you are using Windows, replace `export` with `set` <br>
-2.) run `python -m flask run` <br>
-3.) open the link provided in the command line <br>
-For more information on running Flask, go to http://flask.pocoo.org/docs/0.12/quickstart/#a-minimal-application <br>
+1. `make deploy-standalone` to deploy with Bokeh directly.
+1. `make deploy-dev` to deploy with Flask.
+1. `make deploy-prod` to deploy with Flask and Gunicorn as the WSGI.
+
+Note, running `make all` deploys with Flask in development mode. If you don't have `make` installed, you can following these steps instead.
+
+1. `python3 -m venv venv`
+1. `source venv/bin/activate && pip install -r requirements.txt`
+1. `bin/deploy dev` (with the virtual environment activated)
 
 ## Deploying to Heroku
-Make sure your app is ready to be deployed to Heroku by running Flask locally. To deploy to Heroku: <br>
+[Heroku](https://www.heroku.com) is a service to easily host web applications. Sign up and download the Heroku CLI tool. Make sure the application is ready to be deployed to Heroku by running the application locally. Follow the steps below to deploy to Heroku.
 
-0.) clone repository (if you haven't yet): `git clone https://github.com/xofbd/alabama_election_map` <br>
-1.) `heroku login` and enter your credentials <br>
-2.) `heroku create` or `heroku create app-name` where app-name is a custom app name <br>
-3.) `git push heroku master` <br>
-4.) `heroku open` or open the app online through your Heroku profile <br>
+1. clone the repository.
+1. `heroku login` and enter your credentials.
+1. `heroku create` or `heroku create <app-name>` where `<app-name>` is a custom application name.
+1. `git push heroku master`.
+1. `heroku open` or open the application online through your Heroku profile.
 
 ## License
 This project is distributed under the MIT license. Please see `LICENSE` for more information.

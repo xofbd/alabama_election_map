@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 ACTIVATE_VENV := source venv/bin/activate
 
-.PHONY: all clean deploy-dev deploy-prod
+.PHONY: all clean deploy-dev deploy-prod deploy-standalone
 
 all: clean data/*_election_results.csv deploy-dev
 
@@ -15,6 +15,9 @@ deploy-dev: .deploy
 
 deploy-prod: .deploy
 	${ACTIVATE_VENV} && bin/deploy prod
+
+deploy-standalone: .deploy
+	${ACTIVATE_VENV} && bin/deploy standalone
 
 # Virtual Environment
 venv:

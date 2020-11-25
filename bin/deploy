@@ -7,7 +7,9 @@ if [[ $1 == dev ]]; then
     flask run
 elif [[ $1 == prod ]]; then
     gunicorn --pythonpath=alabama/app app:app
+elif [[ $1 == standalone ]]; then
+     python3 -m alabama.app.bokeh_plot
 else
-    echo "Positional argument should be dev or prod, not $1."
+    echo "Positional argument should be dev, prod, or standalone, not $1."
     exit 1
 fi

@@ -1,0 +1,2 @@
+-c requirements-deploy.txt
+pytest==6.1.2

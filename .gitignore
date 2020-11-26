@@ -3,3 +3,4 @@ venv
 .pip-tools
 .deploy
 .process
+.test

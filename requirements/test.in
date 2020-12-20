@@ -1,2 +1,2 @@
--c requirements-deploy.txt
+-c deploy.txt
 pytest==6.1.2

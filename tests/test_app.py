@@ -23,7 +23,8 @@ def test_plot(test_client):
     """
     GIVEN a Flask application context
     WHEN a GET request is made to '/plot'
-    THEN check that 200 status code is returned
+    THEN check that a 200 status and the right page was returned
     """
     response = test_client.get('/plot')
+    assert b"Alabama Election Results" in response.data
     assert response.status_code == 200

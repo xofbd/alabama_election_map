@@ -1,54 +1,55 @@
 SHELL = /bin/bash
 ACTIVATE_VENV = source venv/bin/activate
-OUTPUTS = .pip-tools .process .deploy .test
-CSV = $(wildcard data/*_election_results.csv)
-REQ = $(wildcard requirements/*.txt) requirements.txt
-SRC = $(filter-out .pip-tools, $^)
+
+outputs = .pip-tools .process .deploy .test
+csvs = $(wildcard data/*_election_results.csv)
+reqs = $(wildcard requirements/*.txt) requirements.txt
 
 .PHONY: all
-all: clean $(CSV) deploy-dev
+all: clean $(csvs) deploy-dev
 
 # Creating CSV files
-data/%_results.csv: .process alabama/process/%.py
+data/%_results.csv: alabama/process/%.py | .process
 	$(ACTIVATE_VENV) && python -m alabama.process.$*
 
 # Deployment
 .PHONY: deploy-dev deploy-prod deploy-standalone
-deploy-dev deploy-prod deploy-standalone: .deploy
+deploy-dev deploy-prod deploy-standalone: | .deploy
 	$(ACTIVATE_VENV) && bin/deploy $(subst deploy-,,$@)
 
 # Virtual environments
 venv:
 	python3 -m venv $@
 
-.pip-tools: requirements/pip-tools.txt venv 
+.pip-tools: requirements/pip-tools.txt | venv
 	$(ACTIVATE_VENV) && pip install -r $<
 	touch $@
 
-.process: .pip-tools requirements/base.txt requirements/process.txt
-	$(ACTIVATE_VENV) && pip-sync $(SRC)
-	rm -f $(filter-out $@ .pip-tools, $(OUTPUTS))
+.process: requirements/base.txt requirements/process.txt | .pip-tools
+	$(ACTIVATE_VENV) && pip-sync $^
+	rm -f $(filter-out $@ .pip-tools, $(outputs))
 	touch $@
 
-.deploy: .pip-tools requirements/base.txt requirements/deploy.txt
-	$(ACTIVATE_VENV) && pip-sync $(SRC)
-	rm -f $(filter-out $@ .pip-tools, $(OUTPUTS))
+.deploy: requirements/base.txt requirements/deploy.txt | .pip-tools
+	$(ACTIVATE_VENV) && pip-sync $^
+	rm -f $(filter-out $@ .pip-tools, $(outputs))
 	touch $@
 
-.test: .pip-tools requirements/base.txt requirements/deploy.txt requirements/test.txt
-	$(ACTIVATE_VENV) && pip-sync $(SRC)
-	rm -f $(filter-out $@ .pip-tools, $(OUTPUTS))
+.test: requirements/base.txt requirements/deploy.txt requirements/test.txt | .pip-tools
+	$(ACTIVATE_VENV) && pip-sync $^
+	rm -f $(filter-out $@ .pip-tools, $(outputs))
 	touch $@
 
 # Creating requirement files
 .PHONY: requirements
-requirements: $(REQ)
+requirements: $(reqs)
 
-requirements/%.txt: .pip-tools requirements/%.in
-	$(ACTIVATE_VENV) && pip-compile $(word 2, $^)
+requirements/%.txt: requirements/%.in requirements/constraints.txt | .pip-tools
+	$(ACTIVATE_VENV) && pip-compile $<
 
 requirements/pip-tools.txt:
-	 # Avoids circular reference
+# Avoids circular reference
+	:
 
 requirements/deploy.txt: requirements/base.txt
 
@@ -56,7 +57,7 @@ requirements/process.txt: requirements/base.txt
 
 requirements/test.txt: requirements/deploy.txt
 
-requirements.txt: .deploy
+requirements.txt: requirements/deploy.txt | .deploy
 	$(ACTIVATE_VENV) && pip freeze > $@
 
 # Utility
@@ -66,7 +67,7 @@ tests: .test
 	$(ACTIVATE_VENV) && pytest -s tests
 
 clean:
-	rm -f $(OUTPUTS)
+	rm -f $(outputs)
 	rm -rf venv
 	rm -rf .pytest_cache
 	find . | grep __pycache__ | xargs rm -rf

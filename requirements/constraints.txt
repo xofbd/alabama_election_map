@@ -1,0 +1,4 @@
+# Fixes security vulnerability
+jinja2>=2.11.3 
+pillow>=8.1.1
+urllib3>=1.26.3
